@@ -1,6 +1,6 @@
 var something = {
     cool: function() {
-        
+        this.greeting = "Hello World";
         this.count = this.count? this.conut +1 : 1;
     }
 };
