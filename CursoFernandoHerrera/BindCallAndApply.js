@@ -14,7 +14,7 @@ var carro2 = {
 
 console.log(carro.imprimir());
 
-var logCarrro = function (arg1, arg 2) {
+var logCarrro = function (arg1, arg2) {
     console.log("Carro: ", this.imprimir());
     console.log("Argumentos: ", arg1, arg2);
     console.log("===========================");
