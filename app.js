@@ -1,60 +1,72 @@
-// class C{
-//     constructor(){
-//         this.num = Math.random();
-//     }
-//     rand () {
-//         console.log("Random: "+ this.num );
-//     }
-// }
+var SDK = {
+    version: function() {
+        return 1;
+    },
+    formatText: function(templateFn, data) {
+        this.name = data.name;
+        console.log(templateFn.call(this));
+    },
+    greet: function (){
+        return `Hello ${ this.name }`;
+    },
+    createLogger: function (templateFn, loggerName){  
+        let calls = 0;
+        return function(logMessage){
+            calls++;
+            console.log(
+                calls + ' - ' + loggerName + ' - ' + templateFn.call(logMessage)
+            );
+        }
+    },
+    createLoggerAsync: async function (loggerName){
+        return new Promise((resolve, reject) => {
+            if(!loggerName){
+                reject('You are missing the logger nam');
+            }
 
-// var c1 = new C();
-// console.log(c1.rand());
+            let calls = 0;
+             resolve({               
+                setLoggerFn: function (fn){
+                   this.setLoggerFn = fn;
+                },
+                log: function (logMessage){  
+                    calls++;                 
+                    console.log(
+                        calls + ' - ' + loggerName + ' - ' + this.setLoggerFn.call(logMessage)
+                    );
+                }
+             });
+        });
+    }
+};
 
-// C.prototype.rand = function() {
-//     console.log("Random; " + Math.round(this.num * 1000 ));
-// }
+SDK.formatText(SDK.greet, { name: 'Ana'});
 
-// var c2 = new C();
-
-// console.log(c1.rand());
-// console.log(c2.rand());
-
-// class C {
-// 	constructor() {
-// 		// make sure to modify the shared state,
-// 		// not set a shadowed property on the
-// 		// instances!
-// 		C.prototype.count++;
-
-// 		// here, `this.count` works as expected
-// 		// via delegation
-// 		console.log( "Hello: " + this.count );
-// 	}
-// }
-
-// // add a property for shared state directly to
-// // prototype object
-// C.prototype.count = 0;
-
-// var c1 = new C();
-// // Hello: 1
-
-// var c2 = new C();
-// // Hello: 2
-
-// c1.count === 2; // true
-// c1.count === c2.count; // true
-
-class C {
-	constructor(id) {
-		// oops, gotcha, we're shadowing `id()` method
-		// with a property value on the instance
-		this.id = id;
-	}
-	id() {
-		console.log( "Id: " + this.id );
-	}
+function log (){
+    return `Info: ${this.logMessage}`
 }
 
-var c1 = new C( "c1" );
-c1.id(); // TypeError -- `c1.id` is now the string "c1"
+const logger = SDK.createLogger(log, 'Main');
+logger({logMessage: 'Init system'});
+logger({logMessage: 'Init userspace'});
+
+async function wait (){
+    const loggerAsync = await SDK.createLoggerAsync('Main');
+    console.log(loggerAsync);
+    loggerAsync.setLoggerFn(log);
+    loggerAsync.log({ logMessage: 'Init system' });
+    loggerAsync.log({ logMessage: 'Init userspace' });
+}
+
+wait();
+
+async function waitII (){
+    try {
+    const invalidLogger = await SDK.createLoggerAsync();
+    }catch {
+        throw 'Invalid promise';
+    }
+}
+
+waitII();
+
